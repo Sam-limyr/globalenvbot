@@ -34,7 +34,7 @@ def handle_updates(updates):
             text = update["message"]["text"]
             chat = update["message"]["chat"]["id"]
             items = db.get_items(chat)
-            starting = ['Setting', 'Closing', 'Leaderboard']
+            starting = ['Setting', 'Closing']
             if text == "/start":
                 startboard = build_keyboard(starting)
                 send_message("Hi! Welcome to GlobalEnvbot!", chat, startboard)
@@ -43,12 +43,26 @@ def handle_updates(updates):
                 layer1subboard = build_keyboard(layer1)
                 send_message("Pick an option!", chat, layer1subboard)
                 #add logic for suboptions
+
+                if text == "Register":
+                    send_message("Type your name and Window status: open/close", chat)
+                  
+
             elif text == "Closing":
                 send_message("Whose window?", chat) #add options from database
-            elif text == "Leaderboard":
-                send_message("Welcome to the leaderboards!", chat) #add link to database
+                
+
+
+
             elif text == "/done":
                 send_message("Exiting bot", chat)
+                 
+            else:
+                 name = update["message"]["text"]
+                 info,status = name.split()
+                 db.add_item(info, status)  
+                 items = db.get_items(chat)  
+                 message = "\n".join(items)
         except KeyError as e:
             print(e)
 
@@ -65,7 +79,7 @@ def build_keyboard(items):
     return json.dumps(reply_markup)
 
 def send_message(text, chat_id, reply_markup=None):
-    text = urllib.parse.quote_plus(text)
+    text = urllib.quote_plus(text)
     url = URL + "sendMessage?text={}&chat_id={}&parse_mode=Markdown".format(text, chat_id)
     if reply_markup:
         url += "&reply_markup={}".format(reply_markup)
